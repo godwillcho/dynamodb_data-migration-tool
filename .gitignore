@@ -1,0 +1,28 @@
+# Logs
+*.log
+migration.log
+
+# Temporary files
+/tmp/
+*.tmp
+dynamodb_batch_*.json
+
+# AWS credentials
+.aws/
+credentials
+config
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup

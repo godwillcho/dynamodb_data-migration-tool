@@ -1,0 +1,46 @@
+name: Test Migration Script
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run ShellCheck
+      uses: ludeeus/action-shellcheck@master
+      with:
+        scandir: '.'
+        severity: warning
+
+  syntax-check:
+    name: Bash Syntax Check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check bash syntax
+      run: |
+        bash -n migrate.sh
+        echo "Syntax check passed!"
+
+  dry-run-test:
+    name: Test Dry Run Mode
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq
+    - name: Test script configuration
+      run: |
+        # Verify script has required variables
+        grep -q "SOURCE_TABLE=" migrate.sh
+        grep -q "TARGET_TABLE=" migrate.sh
+        grep -q "DRY_RUN=" migrate.sh
+        echo "Configuration check passed!"
