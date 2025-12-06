@@ -34,8 +34,7 @@ ADD_STRINGS=(
 
 # Add map attributes (format: "attribute_name:json_object")
 # The JSON should be a valid DynamoDB map structure
-ADD_MAPS=(
-)
+ADD_MAPS=('Queue:{"M":{"en-US":{"S":"12345"},"es-US":{"S":"123A"}}}')
 
 DRY_RUN=false  # Set to true to preview without writing
 BATCH_SIZE=25
