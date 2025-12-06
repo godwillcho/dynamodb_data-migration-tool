@@ -34,6 +34,17 @@ SET_DEFAULTS=(
     "version:1.0"
 )
 
+# Add string attributes (format: "attribute_name:value")
+ADD_STRINGS=(
+    "environment:production"
+    "migrated_by:script"
+)
+
+# Add map attributes (format: "attribute_name:json_object")
+ADD_MAPS=(
+    'metadata:{"M":{"created":{"S":"2024-01-01"},"source":{"S":"migration"}}}'
+)
+
 # ============================================
 # ADVANCED OPTIONS
 # ============================================
@@ -60,3 +71,26 @@ SCAN_LIMIT=100 # Items to scan per iteration
 # REMOVE_ATTRS=()
 # RENAME_ATTRS=()
 # SET_DEFAULTS=("greeting:<speak>Hello <emphasis>world</emphasis></speak>")
+# ADD_STRINGS=()
+# ADD_MAPS=()
+
+# Example 4: Add string metadata
+# REMOVE_ATTRS=()
+# RENAME_ATTRS=()
+# SET_DEFAULTS=()
+# ADD_STRINGS=("migrated_at:2024-12-06" "source:legacy_system")
+# ADD_MAPS=()
+
+# Example 5: Add complex map structures
+# REMOVE_ATTRS=()
+# RENAME_ATTRS=()
+# SET_DEFAULTS=()
+# ADD_STRINGS=()
+# ADD_MAPS=('config:{"M":{"enabled":{"BOOL":true},"timeout":{"N":"30"}}}')
+
+# Example 6: Add multi-language support
+# REMOVE_ATTRS=()
+# RENAME_ATTRS=()
+# SET_DEFAULTS=()
+# ADD_STRINGS=()
+# ADD_MAPS=('locales:{"M":{"en-US":{"S":"English"},"es-ES":{"S":"Spanish"}}}')

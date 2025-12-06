@@ -7,6 +7,8 @@ A powerful bash script for migrating data between DynamoDB tables with support f
 - 🔄 **Attribute Removal** - Remove unwanted attributes during migration
 - 🏷️ **Attribute Renaming** - Rename attributes (e.g., snake_case to camelCase)
 - ⚙️ **Default Values** - Set default values for attributes (text or SSML format)
+- 📝 **Add String Attributes** - Add new string attributes to all items
+- 🗺️ **Add Map Attributes** - Add complex map structures to items
 - 🔍 **Verbose Logging** - Detailed timestamped logs for every action
 - 🧪 **Dry Run Mode** - Preview transformations without writing data
 - 📦 **Batch Processing** - Efficient batch writes with configurable delays
@@ -70,21 +72,24 @@ PROFILE=""  # Leave empty for default credentials
 # Attributes to remove from source table
 REMOVE_ATTRS=(
     "RemoveThis"
-    "deprecated_field"
 )
 
 # Attributes to rename (format: "old_name:new_name")
 RENAME_ATTRS=(
     "Queue:QueueARN"
     "Name:firstname"
-    "user_id:userId"
 )
 
 # Set default values for attributes (format: "attribute_name:value")
 SET_DEFAULTS=(
-    "status:active"
-    "version:1.0"
-    "description:<speak>This is a <emphasis>sample</emphasis> SSML text</speak>"
+)
+
+# Add string attributes (format: "attribute_name:value")
+ADD_STRINGS=(
+)
+
+# Add map attributes (format: "attribute_name:json_object")
+ADD_MAPS=(
 )
 
 DRY_RUN=false  # Set to true to preview without writing
@@ -94,7 +99,54 @@ SCAN_LIMIT=100
 
 ## 📖 Usage Examples
 
-### Example 1: Basic Migration with Attribute Removal
+### Example 1: Current Default (Test1 to Test2)
+
+```bash
+SOURCE_TABLE="Test1"
+TARGET_TABLE="Test2"
+REGION="us-west-2"
+
+REMOVE_ATTRS=(
+    "RemoveThis"
+)
+
+RENAME_ATTRS=(
+    "Queue:QueueARN"
+    "Name:firstname"
+)
+
+SET_DEFAULTS=()
+ADD_STRINGS=()
+ADD_MAPS=()
+```
+
+This configuration:
+- Removes the "RemoveThis" attribute
+- Renames "Queue" to "QueueARN"
+- Renames "Name" to "firstname"
+
+### Example 2: Add Migration Tracking
+
+```bash
+SOURCE_TABLE="Test1"
+TARGET_TABLE="Test2"
+
+REMOVE_ATTRS=("RemoveThis")
+RENAME_ATTRS=("Queue:QueueARN" "Name:firstname")
+
+ADD_STRINGS=(
+    "migrated_at:2024-12-06"
+    "source_table:Test1"
+    "migration_version:1.0.0"
+)
+
+ADD_MAPS=()
+SET_DEFAULTS=()
+```
+
+### Example 3: Basic Migration with Attribute Removal
+
+### Example 3: Basic Migration with Attribute Removal
 
 ```bash
 SOURCE_TABLE="users-old"
@@ -109,9 +161,11 @@ REMOVE_ATTRS=(
 
 RENAME_ATTRS=()
 SET_DEFAULTS=()
+ADD_STRINGS=()
+ADD_MAPS=()
 ```
 
-### Example 2: Rename Attributes (snake_case to camelCase)
+### Example 4: Rename Attributes (snake_case to camelCase)
 
 ```bash
 SOURCE_TABLE="products-v1"
@@ -129,7 +183,7 @@ RENAME_ATTRS=(
 SET_DEFAULTS=()
 ```
 
-### Example 3: Set Default Values
+### Example 5: Set Default Values
 
 ```bash
 SOURCE_TABLE="orders-old"
@@ -137,6 +191,8 @@ TARGET_TABLE="orders-new"
 
 REMOVE_ATTRS=()
 RENAME_ATTRS=()
+ADD_STRINGS=()
+ADD_MAPS=()
 
 SET_DEFAULTS=(
     "status:pending"
@@ -145,7 +201,52 @@ SET_DEFAULTS=(
 )
 ```
 
-### Example 4: SSML Default Values
+### Example 6: Add String Attributes
+
+```bash
+SOURCE_TABLE="users-old"
+TARGET_TABLE="users-new"
+
+REMOVE_ATTRS=()
+RENAME_ATTRS=()
+SET_DEFAULTS=()
+
+ADD_STRINGS=(
+    "account_type:premium"
+    "signup_source:web"
+    "onboarding_complete:true"
+)
+
+ADD_MAPS=()
+```
+
+### Example 7: Add Map Attributes
+
+```bash
+SOURCE_TABLE="products-old"
+TARGET_TABLE="products-new"
+
+REMOVE_ATTRS=()
+RENAME_ATTRS=()
+SET_DEFAULTS=()
+ADD_STRINGS=()
+
+ADD_MAPS=(
+    'pricing:{"M":{"amount":{"N":"99.99"},"currency":{"S":"USD"}}}'
+    'metadata:{"M":{"created":{"S":"2024-01-01"},"author":{"S":"admin"}}}'
+    'features:{"M":{"premium":{"BOOL":true},"trial_days":{"N":"30"}}}'
+)
+```
+
+### Example 8: Add Nested Map for Localization
+
+```bash
+ADD_MAPS=(
+    'translations:{"M":{"en-US":{"M":{"title":{"S":"Hello"},"desc":{"S":"Welcome"}}},"es-ES":{"M":{"title":{"S":"Hola"},"desc":{"S":"Bienvenido"}}}}}'
+)
+```
+
+### Example 9: SSML Default Values
 
 ```bash
 SET_DEFAULTS=(
@@ -154,7 +255,7 @@ SET_DEFAULTS=(
 )
 ```
 
-### Example 5: Complete Transformation
+### Example 10: Complete Transformation
 
 ```bash
 SOURCE_TABLE="legacy-users"
@@ -205,32 +306,33 @@ Target: Test2
 Region: us-west-2
 Attributes to remove: RemoveThis
 Attributes to rename: Queue:QueueARN Name:firstname
-Default values to set: status:active version:1.0
+Default values to set: 
+String attributes to add: 
+Map attributes to add: 
 ==============================================
 
 Starting migration...
 
 [2024-12-06 10:15:23] Iteration 1: Scanning source table...
 [2024-12-06 10:15:23] Executing: aws dynamodb --region us-west-2 scan --table-name Test1 --limit 100
-[2024-12-06 10:15:24] Scan returned 3 items
+[2024-12-06 10:15:24] Scan returned 2 items
 [2024-12-06 10:15:24] Processing item 1...
-[2024-12-06 10:15:24]   Original item: {"id":{"S":"001"},"Name":{"S":"John"},"Queue":{"S":"arn:aws:sqs"},"RemoveThis":{"S":"temp"}}
-[2024-12-06 10:15:24]   Transformed item: {"id":{"S":"001"},"firstname":{"S":"John"},"QueueARN":{"S":"arn:aws:sqs"},"status":{"S":"active"},"version":{"S":"1.0"}}
+[2024-12-06 10:15:24]   Original item: {"Queue":{"M":{"es-US":{"S":"345678"},"en-US":{"S":"12345"}}},"RemoveThis":{"S":"12345gfghj"},"SystemEndpoint":{"S":"12345"},"Name":{"S":"Godwill Cho"}}
+[2024-12-06 10:15:24]   Transformed item: {"SystemEndpoint":{"S":"12345"},"QueueARN":{"M":{"es-US":{"S":"345678"},"en-US":{"S":"12345"}}},"firstname":{"S":"Godwill Cho"}}
 [2024-12-06 10:15:24] Processing item 2...
-[2024-12-06 10:15:24]   Original item: {"id":{"S":"002"},"Name":{"S":"Jane"},"Queue":{"S":"arn:aws:sqs"},"RemoveThis":{"S":"temp"}}
-[2024-12-06 10:15:24]   Transformed item: {"id":{"S":"002"},"firstname":{"S":"Jane"},"QueueARN":{"S":"arn:aws:sqs"},"status":{"S":"active"},"version":{"S":"1.0"}}
-[2024-12-06 10:15:24] Batch full (25 items). Writing to target table...
+[2024-12-06 10:15:24]   Original item: {"Queue":{"M":{"es-US":{"S":"345678"},"en-US":{"S":"12345"}}},"RemoveThis":{"S":"12345gfghj"},"SystemEndpoint":{"S":"123457"},"Name":{"S":"Jane Doe"}}
+[2024-12-06 10:15:24]   Transformed item: {"SystemEndpoint":{"S":"123457"},"QueueARN":{"M":{"es-US":{"S":"345678"},"en-US":{"S":"12345"}}},"firstname":{"S":"Jane Doe"}}
+[2024-12-06 10:15:24] Writing final batch of 2 items...
 [2024-12-06 10:15:24] Creating batch write request file...
-[2024-12-06 10:15:24] Executing batch-write-item for 25 items...
-[2024-12-06 10:15:25] ✓ Successfully wrote 25 items to Test2
-[2024-12-06 10:15:25] Waiting 0.5 seconds before next batch...
-[2024-12-06 10:15:26] Progress: 25 items processed so far
+[2024-12-06 10:15:24] Executing batch-write-item for 2 items...
+[2024-12-06 10:15:25] ✓ Successfully wrote 2 items to Test2
+[2024-12-06 10:15:26] Progress: 2 items processed so far
 [2024-12-06 10:15:26] No more pages to scan. Migration loop complete.
 
 ==============================================
 Migration completed!
 ==============================================
-Total items migrated: 100
+Total items migrated: 2
 Total items failed: 0
 Success rate: 100.00%
 ```
@@ -273,6 +375,33 @@ Add SSML formatted responses for Alexa/voice apps:
 SET_DEFAULTS=(
     "welcome_message:<speak>Welcome to <emphasis>our service</emphasis></speak>"
     "help_text:<speak>Say <break time='300ms'/> help for assistance</speak>"
+)
+```
+
+### Use Case 5: Add Metadata to All Items
+Add tracking and metadata fields:
+```bash
+ADD_STRINGS=(
+    "migrated_at:2024-12-06"
+    "migration_version:1.0"
+    "source_table:legacy_table"
+)
+```
+
+### Use Case 6: Add Configuration Maps
+Add complex configuration to all items:
+```bash
+ADD_MAPS=(
+    'app_config:{"M":{"theme":{"S":"dark"},"notifications":{"BOOL":true},"max_retries":{"N":"3"}}}'
+    'permissions:{"M":{"read":{"BOOL":true},"write":{"BOOL":false},"admin":{"BOOL":false}}}'
+)
+```
+
+### Use Case 7: Multi-Language Support
+Add localized content:
+```bash
+ADD_MAPS=(
+    'locales:{"M":{"en-US":{"S":"English content"},"es-ES":{"S":"Contenido en español"},"fr-FR":{"S":"Contenu français"}}}'
 )
 ```
 

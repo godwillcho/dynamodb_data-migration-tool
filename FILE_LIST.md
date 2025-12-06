@@ -19,12 +19,19 @@
    - Step-by-step instructions
    - Common scenarios
 
-4. **CHANGELOG.md** (1.5 KB)
+4. **EXAMPLES.md** (NEW - 7.0 KB)
+   - Detailed examples for adding string attributes
+   - Map attribute examples with DynamoDB format
+   - Complex nested structures
+   - Voice app examples
+   - E-commerce examples
+
+5. **CHANGELOG.md** (1.5 KB)
    - Version history
    - Release notes
    - Planned features
 
-5. **CONTRIBUTING.md** (1.6 KB)
+6. **CONTRIBUTING.md** (1.6 KB)
    - How to contribute
    - Code guidelines
    - Testing checklist
@@ -57,8 +64,8 @@
     - Syntax and shellcheck validation
 
 ## Total Package
-- **10 files**
-- **~35 KB total**
+- **12 files**
+- **~42 KB total**
 - **Complete production-ready repository**
 
 ## File Purposes
@@ -85,6 +92,7 @@ All files are available in the outputs directory:
 - migrate.sh
 - README.md
 - QUICKSTART.md
+- EXAMPLES.md
 - CHANGELOG.md
 - CONTRIBUTING.md
 - GITHUB_SETUP.md
@@ -92,6 +100,7 @@ All files are available in the outputs directory:
 - .gitignore
 - LICENSE
 - .github/workflows/test.yml
+- FILE_LIST.md
 
 ## Quick Upload Commands
 
@@ -119,11 +128,13 @@ git push origin v1.0.0
 | LICENSE | MIT license terms | ✅ Yes |
 | .gitignore | Git ignore rules | ⚠️ Recommended |
 | QUICKSTART.md | Quick setup guide | ⚠️ Recommended |
+| EXAMPLES.md | Detailed attribute examples | ⚠️ Recommended |
 | CHANGELOG.md | Version history | ⚠️ Recommended |
 | CONTRIBUTING.md | Contribution guide | 📋 Optional |
 | config.example.sh | Example config | 📋 Optional |
 | GITHUB_SETUP.md | Setup instructions | 📋 Optional |
 | .github/workflows/test.yml | CI/CD automation | 📋 Optional |
+| FILE_LIST.md | This file list | 📋 Optional |
 
 ## File Structure in Repository
 
@@ -135,6 +146,8 @@ dynamodb-migration-tool/
 ├── .gitignore
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
+├── EXAMPLES.md
+├── FILE_LIST.md
 ├── GITHUB_SETUP.md
 ├── LICENSE
 ├── QUICKSTART.md

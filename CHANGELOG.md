@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Attribute removal functionality
 - Attribute renaming functionality
 - Default value setting (text and SSML support)
+- **Add string attributes** - Add new string fields to all items
+- **Add map attributes** - Add complex map/object structures to items
+- Support for nested maps and complex DynamoDB types
 - Verbose logging with timestamps
 - Dry run mode for testing
 - Batch processing with configurable batch size
@@ -24,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unwanted attributes from source table
 - Rename attributes during migration
 - Set default values for new or existing attributes
+- Add string attributes to all items
+- Add map/object attributes with complex nested structures
+- Support for all DynamoDB data types (S, N, BOOL, M, L, etc.)
 - SSML format support for voice applications
 - Detailed logging of every operation
 - Real-time progress updates

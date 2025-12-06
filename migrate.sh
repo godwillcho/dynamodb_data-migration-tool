@@ -26,9 +26,15 @@ RENAME_ATTRS=(
 # For text values, use plain text
 # For SSML, wrap in <speak></speak> tags
 SET_DEFAULTS=(
-    "status:active"
-    "version:1.0"
-    "description:<speak>This is a <emphasis>sample</emphasis> SSML text</speak>"
+)
+
+# Add string attributes (format: "attribute_name:value")
+ADD_STRINGS=(
+)
+
+# Add map attributes (format: "attribute_name:json_object")
+# The JSON should be a valid DynamoDB map structure
+ADD_MAPS=(
 )
 
 DRY_RUN=false  # Set to true to preview without writing
@@ -54,6 +60,8 @@ echo "Region: $REGION"
 echo "Attributes to remove: ${REMOVE_ATTRS[@]}"
 echo "Attributes to rename: ${RENAME_ATTRS[@]}"
 echo "Default values to set: ${SET_DEFAULTS[@]}"
+echo "String attributes to add: ${ADD_STRINGS[@]}"
+echo "Map attributes to add: ${ADD_MAPS[@]}"
 if [[ "$DRY_RUN" == true ]]; then
     echo "Mode: DRY RUN"
 fi
@@ -76,7 +84,7 @@ transform_item() {
         fi
     done
     
-    # Set default values for attributes
+    # Set default values for attributes (legacy support)
     for default_pair in "${SET_DEFAULTS[@]}"; do
         IFS=':' read -r attr_name attr_value <<< "$default_pair"
         # Check if value contains SSML (starts with <speak>)
@@ -87,6 +95,25 @@ transform_item() {
             # Plain text value - store as string with S type
             transformed=$(echo "$transformed" | jq --arg key "$attr_name" --arg val "$attr_value" '.[$key] = {"S": $val}')
         fi
+    done
+    
+    # Add string attributes
+    for string_pair in "${ADD_STRINGS[@]}"; do
+        IFS=':' read -r attr_name attr_value <<< "$string_pair"
+        # Store as DynamoDB string type
+        transformed=$(echo "$transformed" | jq --arg key "$attr_name" --arg val "$attr_value" '.[$key] = {"S": $val}')
+    done
+    
+    # Add map attributes
+    for map_pair in "${ADD_MAPS[@]}"; do
+        # Extract attribute name (everything before first colon)
+        attr_name="${map_pair%%:*}"
+        # Extract JSON value (everything after first colon)
+        json_value="${map_pair#*:}"
+        
+        # Parse and add the map structure
+        # The json_value should already be in DynamoDB format
+        transformed=$(echo "$transformed" | jq --arg key "$attr_name" --argjson val "$json_value" '.[$key] = $val')
     done
     
     echo "$transformed"
@@ -101,6 +128,46 @@ cleanup() {
     rm -f "$TEMP_BATCH_FILE"
 }
 trap cleanup EXIT
+
+echo ""
+echo "Verifying tables..."
+echo ""
+
+# Check if source table exists
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Checking source table '$SOURCE_TABLE'..."
+if ! $AWS_CMD describe-table --table-name "$SOURCE_TABLE" > /dev/null 2>&1; then
+    echo ""
+    echo "❌ ERROR: Source table '$SOURCE_TABLE' not found in region $REGION"
+    echo ""
+    echo "Possible issues:"
+    echo "  1. Table name is incorrect (check spelling/case)"
+    echo "  2. Wrong region (current: $REGION)"
+    echo "  3. AWS credentials don't have access"
+    echo "  4. Table doesn't exist yet"
+    echo ""
+    echo "To list your tables, run:"
+    echo "  aws dynamodb list-tables --region $REGION"
+    echo ""
+    exit 1
+fi
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✓ Source table found"
+
+# Check if target table exists
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Checking target table '$TARGET_TABLE'..."
+if ! $AWS_CMD describe-table --table-name "$TARGET_TABLE" > /dev/null 2>&1; then
+    echo ""
+    echo "❌ ERROR: Target table '$TARGET_TABLE' not found in region $REGION"
+    echo ""
+    echo "You need to create the target table first:"
+    echo "  aws dynamodb create-table --region $REGION \\"
+    echo "    --table-name $TARGET_TABLE \\"
+    echo "    --attribute-definitions AttributeName=id,AttributeType=S \\"
+    echo "    --key-schema AttributeName=id,KeyType=HASH \\"
+    echo "    --billing-mode PAY_PER_REQUEST"
+    echo ""
+    exit 1
+fi
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✓ Target table found"
 
 echo ""
 echo "Starting migration..."
